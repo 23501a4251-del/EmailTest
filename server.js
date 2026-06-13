@@ -2,6 +2,24 @@ require("dotenv").config();
 
 const express = require("express");
 const nodemailer = require("nodemailer");
+const dns = require("dns");
+
+dns.lookup("smtp.gmail.com", { family: 4 }, (err, address) => {
+  console.log("SMTP IPv4:", address);
+});
+const net = require("net");
+
+const socket = net.connect(587, "smtp.gmail.com");
+
+socket.on("connect", () => {
+  console.log("✅ Able to reach Gmail SMTP");
+  socket.destroy();
+});
+
+socket.on("error", (err) => {
+  console.error("❌ Cannot reach Gmail SMTP");
+  console.error(err);
+});
 
 const app = express();
 
@@ -15,10 +33,15 @@ console.log(
 );
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // STARTTLS
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
 });
 
